@@ -223,7 +223,7 @@ export function MenuManagementTable() {
                     </p>
 
                     <div className="overflow-x-auto rounded-xl border">
-                        <Table>
+                        <Table className="min-w-[900px]">
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Item</TableHead>
@@ -380,7 +380,7 @@ export function MenuManagementTable() {
                     </div>
 
                     {pagination && pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4">
+                        <div className="flex flex-wrap items-center justify-center gap-3">
                             <Button
                                 variant="outline"
                                 disabled={page <= 1 || isLoading}

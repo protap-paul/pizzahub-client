@@ -20,21 +20,23 @@ export function StatCard({
 }: StatCardProps) {
     return (
         <Card className="border-border/70 shadow-sm">
-            <CardContent className="flex items-center justify-between gap-4 p-5">
+            <CardContent className="flex items-center justify-between gap-3 p-4 sm:gap-4 sm:p-5">
                 <div className="min-w-0">
-                    <p className="truncate text-sm text-muted-foreground">{label}</p>
+                    <p className="truncate text-xs text-muted-foreground sm:text-sm">
+                        {label}
+                    </p>
 
                     {isLoading ? (
-                        <Skeleton className="mt-2 h-8 w-16" />
+                        <Skeleton className="mt-2 h-7 w-14 sm:h-8 sm:w-16" />
                     ) : (
-                        <p className="mt-1 text-2xl font-extrabold tracking-tight">
+                        <p className="mt-1 truncate text-xl font-extrabold tracking-tight sm:text-2xl">
                             {value}
                         </p>
                     )}
                 </div>
 
-                <div className="rounded-xl bg-muted p-3">
-                    <Icon className={`size-6 ${accent}`} />
+                <div className="shrink-0 rounded-lg bg-muted p-2.5 sm:rounded-xl sm:p-3">
+                    <Icon className={`size-5 sm:size-6 ${accent}`} />
                 </div>
             </CardContent>
         </Card>

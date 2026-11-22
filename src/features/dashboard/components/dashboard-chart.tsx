@@ -50,7 +50,7 @@ export function DashboardChart({
                 )}
             </CardHeader>
 
-            <CardContent className="h-64 pl-0 pr-3">
+            <CardContent className="h-56 pl-0 pr-2 sm:h-64 sm:pr-3">
                 {isLoading ? (
                     <Skeleton className="ml-6 h-full w-[calc(100%-2rem)] rounded-xl" />
                 ) : (

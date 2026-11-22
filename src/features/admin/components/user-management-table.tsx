@@ -177,7 +177,7 @@ export function UserManagementTable() {
                     </p>
 
                     <div className="overflow-x-auto rounded-xl border">
-                        <Table>
+                        <Table className="min-w-[720px]">
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>User</TableHead>
@@ -308,7 +308,7 @@ export function UserManagementTable() {
                     </div>
 
                     {pagination && pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4">
+                        <div className="flex flex-wrap items-center justify-center gap-3">
                             <Button
                                 variant="outline"
                                 disabled={page <= 1 || isLoading}

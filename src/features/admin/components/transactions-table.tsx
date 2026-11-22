@@ -132,7 +132,7 @@ export function TransactionsTable() {
                     </div>
 
                     <div className="overflow-x-auto rounded-xl border">
-                        <Table>
+                        <Table className="min-w-[640px]">
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Vendor</TableHead>

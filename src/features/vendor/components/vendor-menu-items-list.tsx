@@ -110,7 +110,7 @@ export function VendorMenuItemsList() {
                     <p className="text-sm font-medium text-brand-red">
                         Vendor Workspace
                     </p>
-                    <h1 className="mt-1 text-3xl font-bold tracking-tight">
+                    <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
                         My Menu Items
                     </h1>
                     <p className="mt-2 text-muted-foreground">
@@ -252,7 +252,7 @@ export function VendorMenuItemsList() {
                     </div>
 
                     {pagination && pagination.totalPages > 1 && (
-                        <div className="flex items-center justify-center gap-4">
+                        <div className="flex flex-wrap items-center justify-center gap-3">
                             <Button
                                 variant="outline"
                                 disabled={currentPage <= 1}
