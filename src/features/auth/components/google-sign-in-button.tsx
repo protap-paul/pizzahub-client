@@ -1,20 +1,35 @@
-
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { APP_ROUTES } from "@/constants/routes";
 import { signInWithGoogle } from "@/features/auth/services/auth-service";
+import { getSafeRedirect } from "@/lib/auth/redirect-utils";
 
 export function GoogleSignInButton() {
     const [isLoading, setIsLoading] = useState(false);
+    const searchParams = useSearchParams();
 
     const handleGoogleSignIn = async () => {
         try {
             setIsLoading(true);
 
-            const result = await signInWithGoogle();
+            const requestedRedirect = searchParams.get("redirectTo");
+            const safeRedirect = getSafeRedirect(requestedRedirect, "");
+
+            const callbackURL = new URL(
+                APP_ROUTES.AUTH_CALLBACK,
+                window.location.origin
+            );
+
+            if (safeRedirect) {
+                callbackURL.searchParams.set("redirectTo", safeRedirect);
+            }
+
+            const result = await signInWithGoogle(callbackURL.toString());
 
             if (result.error) {
                 toast.error(result.error.message || "Google sign-in failed.");

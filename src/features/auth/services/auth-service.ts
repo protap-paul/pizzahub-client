@@ -39,10 +39,10 @@ export async function signInWithEmail(data: SignInInput) {
 }
 
 // Sign in with Google
-export async function signInWithGoogle() {
+export async function signInWithGoogle(callbackURL = "/") {
     return authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL,
     });
 }
 

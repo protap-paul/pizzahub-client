@@ -1,6 +1,16 @@
 
 import { z } from "zod";
 
+function isValidImageUrl(value: string) {
+    try {
+        const url = new URL(value);
+
+        return ["http:", "https:"].includes(url.protocol) && Boolean(url.hostname);
+    } catch {
+        return false;
+    }
+}
+
 export const signUpSchema = z
     .object({
         name: z
@@ -24,6 +34,14 @@ export const signUpSchema = z
         role: z.enum(["customer", "vendor"]),
 
         businessName: z.string().trim().optional(),
+
+        image: z
+            .string()
+            .trim()
+            .refine((value) => value === "" || isValidImageUrl(value), {
+                message: "Please enter a valid image URL.",
+            })
+            .optional(),
     })
     .superRefine((data, ctx) => {
         if (data.role === "vendor") {

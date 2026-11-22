@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { signUpWithEmail } from "@/features/auth/services/auth-service";
+import { getRoleBasedRedirect } from "@/lib/auth/redirect-utils";
 import {
     signUpSchema,
     type SignUpFormValues,
@@ -27,9 +28,13 @@ export function SignUpForm() {
             password: "",
             role: "customer",
             businessName: "",
+            image: "",
         },
     });
 
+    // React Hook Form's watch() is intentionally not memoized by React
+    // Compiler; the selected role only drives conditional field rendering.
+    // eslint-disable-next-line react-hooks/incompatible-library
     const selectedRole = form.watch("role");
 
     const onSubmit = async (values: SignUpFormValues) => {
@@ -42,7 +47,7 @@ export function SignUpForm() {
             }
 
             toast.success("Your account has been created successfully.");
-            router.push("/");
+            router.push(getRoleBasedRedirect(values.role));
             router.refresh();
         } catch (error) {
             toast.error(
@@ -93,6 +98,22 @@ export function SignUpForm() {
                 />
                 <p className="text-sm text-destructive">
                     {form.formState.errors.password?.message}
+                </p>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="image">Profile Image (Optional)</Label>
+                <Input
+                    id="image"
+                    type="url"
+                    placeholder="https://example.com/your-photo.jpg"
+                    {...form.register("image")}
+                />
+                <p className="text-xs text-muted-foreground">
+                    Paste a public image URL, or leave blank to use your initials.
+                </p>
+                <p className="text-sm text-destructive">
+                    {form.formState.errors.image?.message}
                 </p>
             </div>
 
