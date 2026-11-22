@@ -1,9 +1,12 @@
 
+import type { UserRole } from "@/types/auth-types";
+
 export const APP_ROUTES = {
     HOME: "/",
     MENU: "/menu",
     SIGN_IN: "/sign-in",
     SIGN_UP: "/sign-up",
+    AUTH_CALLBACK: "/auth/callback",
     PROFILE: "/profile",
     MENU_DETAILS: (id: string) => `/menu/${id}`,
 
@@ -11,15 +14,15 @@ export const APP_ROUTES = {
 
     VENDOR: {
         DASHBOARD: "/dashboard/vendor",
-        ADD_MENU_ITEM: "/dashboard/vendor/add-menu-item",
-        MY_MENU_ITEMS: "/dashboard/vendor/my-menu-items",
+        ADD_MENU_ITEM: "/dashboard/vendor/menu-items/new",
+        MY_MENU_ITEMS: "/dashboard/vendor/menu-items",
         ORDERS: "/dashboard/vendor/orders",
         SUBSCRIPTION: "/dashboard/vendor/subscription",
     },
 
     CUSTOMER: {
         DASHBOARD: "/dashboard/customer",
-        MY_ORDERS: "/dashboard/customer/my-orders",
+        MY_ORDERS: "/dashboard/customer/orders",
         FAVORITES: "/dashboard/customer/favorites",
     },
 
@@ -30,6 +33,17 @@ export const APP_ROUTES = {
         TRANSACTIONS: "/dashboard/admin/transactions",
     },
 
-    PAYMENT_SUCCESS: "/dashboard/vendor/subscription",
-    PAYMENT_CANCEL: "/dashboard/vendor/subscription",
+    PAYMENT_SUCCESS: "/payment/success",
+    PAYMENT_CANCEL: "/payment/cancel",
 } as const;
+
+export function getDashboardPath(role: UserRole | undefined | null): string {
+    switch (role) {
+        case "vendor":
+            return APP_ROUTES.VENDOR.DASHBOARD;
+        case "admin":
+            return APP_ROUTES.ADMIN.DASHBOARD;
+        default:
+            return APP_ROUTES.CUSTOMER.DASHBOARD;
+    }
+}
