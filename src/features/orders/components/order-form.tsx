@@ -22,11 +22,13 @@ interface OrderFormProps {
     item: MenuItem;
 }
 
-function getTodayDate() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
+function getMinimumDeliveryDate() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const year = tomorrow.getFullYear();
+    const month = String(tomorrow.getMonth() + 1).padStart(2, "0");
+    const day = String(tomorrow.getDate()).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 }
@@ -61,8 +63,8 @@ export function OrderForm({ item }: OrderFormProps) {
             return;
         }
 
-        if (deliveryDate < getTodayDate()) {
-            toast.error("Please select a valid delivery date.");
+        if (deliveryDate < getMinimumDeliveryDate()) {
+            toast.error("Please select a future delivery date.");
             return;
         }
 
@@ -143,13 +145,16 @@ export function OrderForm({ item }: OrderFormProps) {
                             <Input
                                 id="deliveryDate"
                                 type="date"
-                                min={getTodayDate()}
+                                min={getMinimumDeliveryDate()}
                                 value={deliveryDate}
                                 onChange={(event) => setDeliveryDate(event.target.value)}
                                 className="pl-10"
                                 required
                             />
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                            Choose a date from tomorrow onwards.
+                        </p>
                     </div>
 
                     <div className="space-y-2">

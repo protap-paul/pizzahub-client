@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import {
     CalendarDays,
     MapPin,
@@ -11,6 +12,7 @@ import {
     Ban,
     Package,
     RefreshCw,
+    Store,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,12 +21,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { PageHeader } from "@/features/dashboard/components";
 
 import {
     cancelMyOrder,
     getMyOrders,
 } from "@/features/orders/services/customer-order-service";
+import { getMenuItems } from "@/features/menu/services/menu-service";
 
+import type { MenuItem } from "@/types/menu-types";
 import type {
     Order,
     OrderStatus,
@@ -111,6 +116,7 @@ function OrderTimeline({ order }: { order: Order }) {
 
 export function MyOrdersList() {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [items, setItems] = useState<Record<string, MenuItem>>({});
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
@@ -121,10 +127,18 @@ export function MyOrdersList() {
         try {
             setIsLoading(true);
 
-            const response = await getMyOrders(currentPage, 10);
+            const [orderResponse, menuResponse] = await Promise.all([
+                getMyOrders(currentPage, 10),
+                getMenuItems({ limit: 100 }),
+            ]);
 
-            setOrders(response.orders);
-            setTotalPages(response.pagination.totalPages);
+            setOrders(orderResponse.orders);
+            setTotalPages(orderResponse.pagination.totalPages);
+            setItems(
+                Object.fromEntries(
+                    menuResponse.data.map((item) => [item._id, item])
+                )
+            );
         } catch (error) {
             toast.error(
                 error instanceof Error
@@ -137,7 +151,7 @@ export function MyOrdersList() {
     }, [currentPage]);
 
     useEffect(() => {
-        fetchOrders();
+        void Promise.resolve().then(fetchOrders);
     }, [fetchOrders]);
 
     async function handleCancel(orderId: string) {
@@ -162,23 +176,21 @@ export function MyOrdersList() {
 
     return (
         <section className="space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-extrabold">My Orders</h1>
-                    <p className="mt-2 text-muted-foreground">
-                        Track and manage your pizza orders.
-                    </p>
-                </div>
-
-                <Button
-                    variant="outline"
-                    onClick={fetchOrders}
-                    disabled={isLoading}
-                >
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Refresh
-                </Button>
-            </div>
+            <PageHeader
+                eyebrow="Customer Dashboard"
+                title="My Orders"
+                description="Track and manage your pizza orders."
+                action={
+                    <Button
+                        variant="outline"
+                        onClick={fetchOrders}
+                        disabled={isLoading}
+                    >
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Refresh
+                    </Button>
+                }
+            />
 
             {isLoading ? (
                 <div className="space-y-4">
@@ -203,6 +215,7 @@ export function MyOrdersList() {
                             const config = statusConfig[order.status];
                             const StatusIcon = config.icon;
                             const isExpanded = expandedOrderId === order._id;
+                            const item = items[order.itemId];
 
                             return (
                                 <Card key={order._id} className="overflow-hidden">
@@ -210,10 +223,10 @@ export function MyOrdersList() {
                                         <div className="flex flex-wrap items-start justify-between gap-4">
                                             <div>
                                                 <p className="text-xs text-muted-foreground">
-                                                    Order ID
+                                                    Order #{order._id.slice(-8)}
                                                 </p>
-                                                <p className="mt-1 break-all font-mono text-sm font-semibold">
-                                                    {order._id}
+                                                <p className="mt-1 text-xs text-muted-foreground">
+                                                    Requested {formatDate(order.createdAt)}
                                                 </p>
                                             </div>
 
@@ -228,40 +241,77 @@ export function MyOrdersList() {
 
                                         <Separator />
 
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            <div className="flex gap-3">
-                                                <Package className="mt-1 h-5 w-5 text-brand-red" />
-                                                <div className="min-w-0">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Menu Item ID
-                                                    </p>
-                                                    <p className="break-all text-sm font-semibold">
-                                                        {order.itemId}
-                                                    </p>
-                                                </div>
+                                        <div className="grid gap-5 md:grid-cols-[auto_1fr]">
+                                            <div className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-muted">
+                                                {item?.images?.[0] ? (
+                                                    <Image
+                                                        src={item.images[0]}
+                                                        alt={item.itemName}
+                                                        fill
+                                                        unoptimized
+                                                        className="object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full items-center justify-center">
+                                                        <Package className="size-8 text-muted-foreground" />
+                                                    </div>
+                                                )}
                                             </div>
 
-                                            <div className="flex gap-3">
-                                                <CalendarDays className="mt-1 h-5 w-5 text-brand-red" />
+                                            <div className="grid gap-4 sm:grid-cols-2">
                                                 <div>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Delivery Date
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Menu Item
                                                     </p>
-                                                    <p className="text-sm font-semibold">
-                                                        {formatDate(order.deliveryDate)}
+                                                    <p className="font-semibold">
+                                                        {item?.itemName || "Menu item unavailable"}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {item?.category}
                                                     </p>
                                                 </div>
-                                            </div>
 
-                                            <div className="flex gap-3 sm:col-span-2">
-                                                <MapPin className="mt-1 h-5 w-5 text-brand-red" />
                                                 <div>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Delivery Address
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Vendor
                                                     </p>
-                                                    <p className="text-sm font-semibold">
-                                                        {order.deliveryAddress}
+                                                    <p className="flex items-center gap-1 font-semibold">
+                                                        <Store className="size-4 text-brand-red" />
+                                                        {item?.vendor?.businessName ||
+                                                            item?.vendor?.name ||
+                                                            "Pizza Vendor"}
                                                     </p>
+                                                </div>
+
+                                                <div className="flex gap-3">
+                                                    <CalendarDays className="mt-0.5 h-4 w-4 text-brand-red" />
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Delivery Date
+                                                        </p>
+                                                        <p className="text-sm font-semibold">
+                                                            {formatDate(order.deliveryDate)}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="text-xs text-muted-foreground">
+                                                    <p>Order Reference</p>
+                                                    <p className="font-mono">
+                                                        #{order.itemId.slice(-8)}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex gap-3 sm:col-span-2">
+                                                    <MapPin className="mt-0.5 h-4 w-4 text-brand-red" />
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            Delivery Address
+                                                        </p>
+                                                        <p className="text-sm font-semibold">
+                                                            {order.deliveryAddress}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
