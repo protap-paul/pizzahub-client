@@ -62,23 +62,31 @@ function SignInFormContent() {
                 return;
             }
 
-            const { data: session, error: sessionError } =
-                await authClient.getSession();
+            // Prefer the user returned by the sign-in response; the session
+            // cookie check is only a fallback so a slow cookie write cannot
+            // turn a successful sign-in into an error.
+            const signedInUser = result.data?.user;
 
-            if (sessionError || !session?.user) {
+            const { data: session } = signedInUser
+                ? { data: null }
+                : await authClient.getSession();
+
+            const user = signedInUser ?? session?.user;
+
+            if (!user) {
                 toast.error(
                     "Signed in, but your session could not be verified. Please try again."
                 );
                 return;
             }
 
-            if (session.user.isBlocked) {
+            if (user.isBlocked) {
                 await signOut();
                 router.replace(`${APP_ROUTES.SIGN_IN}?error=blocked`);
                 return;
             }
 
-            const role = session.user.role as UserRole | undefined;
+            const role = user.role as UserRole | undefined;
 
             toast.success("Welcome back to PizzaHub!");
             router.push(getRoleBasedRedirect(role, requestedRedirect));

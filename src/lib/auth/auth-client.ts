@@ -5,8 +5,15 @@ import {
     jwtClient,
 } from "better-auth/client/plugins";
 
+// In the browser, talk to the API through this app's own origin so the
+// session cookie is first-party. On the server, fall back to the API URL.
+const authBaseURL =
+    typeof window !== "undefined"
+        ? `${window.location.origin}/api/auth`
+        : process.env.NEXT_PUBLIC_API_URL;
+
 export const authClient = createAuthClient({
-    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    baseURL: authBaseURL,
 
     plugins: [
         inferAdditionalFields({
