@@ -22,7 +22,7 @@ export function StatCard({
         <Card className="border-border/70 shadow-sm">
             <CardContent className="flex items-center justify-between gap-3 p-4 sm:gap-4 sm:p-5">
                 <div className="min-w-0">
-                    <p className="truncate text-xs text-muted-foreground sm:text-sm">
+                    <p className="line-clamp-2 text-xs leading-tight text-muted-foreground sm:text-sm">
                         {label}
                     </p>
 
