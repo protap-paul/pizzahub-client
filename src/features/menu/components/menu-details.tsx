@@ -1,18 +1,28 @@
+"use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
+    Heart,
     MapPin,
+    MessageCircle,
+    ShoppingBag,
     Star,
     Store,
-    ShoppingBag,
-    MessageCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-import { formatPrice, formatDate } from "@/lib/formatters";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/features/auth/hooks";
+import {
+    addFavorite,
+    getMyFavorites,
+    removeFavorite,
+} from "@/features/favorites/services/favorite-service";
+import { formatDate, formatPrice } from "@/lib/formatters";
 import type { MenuItem } from "@/types/menu-types";
 
 interface MenuDetailsProps {
@@ -20,31 +30,126 @@ interface MenuDetailsProps {
 }
 
 export function MenuDetails({ item }: MenuDetailsProps) {
+    const { user } = useAuth();
+
+    const images = item.images?.length
+        ? item.images
+        : [""];
+    const [activeImage, setActiveImage] = useState(0);
+    const [isFavorite, setIsFavorite] = useState(false);
+    const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+
     const reviews = item.reviews ?? [];
+    const isFeatured = item.isFeatured || item.vendor?.isPremium === true;
+    const isCustomer = user?.role === "customer";
+    const isOwnItem = Boolean(user?.id && item.vendorId === user.id);
+    const canOrder = isCustomer && !isOwnItem;
+
+    useEffect(() => {
+        if (!isCustomer) return;
+
+        let isActive = true;
+
+        async function loadFavoriteState() {
+            try {
+                const response = await getMyFavorites();
+
+                if (isActive) {
+                    setIsFavorite(
+                        response.favorites.some(
+                            (favorite) => favorite._id === item._id
+                        )
+                    );
+                }
+            } catch {
+                // Favorites are supplementary; the details page still works.
+            }
+        }
+
+        void loadFavoriteState();
+
+        return () => {
+            isActive = false;
+        };
+    }, [isCustomer, item._id]);
+
+    async function handleFavoriteToggle() {
+        try {
+            setIsTogglingFavorite(true);
+
+            if (isFavorite) {
+                const response = await removeFavorite(item._id);
+                toast.success(response.message || "Removed from favorites.");
+                setIsFavorite(false);
+            } else {
+                const response = await addFavorite(item._id);
+                toast.success(response.message || "Added to favorites.");
+                setIsFavorite(true);
+            }
+        } catch (error) {
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to update favorites."
+            );
+        } finally {
+            setIsTogglingFavorite(false);
+        }
+    }
 
     return (
         <div className="space-y-10">
             <div className="grid gap-8 lg:grid-cols-2">
-                <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-muted sm:min-h-[450px]">
-                    {item.images?.[0] ? (
-                        <Image
-                            src={item.images[0]}
-                            alt={item.itemName}
-                            fill
-                            unoptimized
-                            priority
-                            className="object-cover"
-                        />
-                    ) : (
-                        <div className="flex h-full min-h-[320px] items-center justify-center text-muted-foreground">
-                            Pizza image is not available
-                        </div>
-                    )}
+                <div className="space-y-3">
+                    <div className="relative min-h-[320px] overflow-hidden rounded-2xl bg-muted sm:min-h-[450px]">
+                        {images[activeImage] ? (
+                            <Image
+                                src={images[activeImage]}
+                                alt={`${item.itemName} image ${activeImage + 1}`}
+                                fill
+                                unoptimized
+                                priority
+                                className="object-cover"
+                            />
+                        ) : (
+                            <div className="flex h-full min-h-[320px] items-center justify-center text-muted-foreground">
+                                Pizza image is not available
+                            </div>
+                        )}
 
-                    {item.isFeatured && (
-                        <Badge className="absolute left-4 top-4 bg-brand-red text-white">
-                            Featured Pizza
-                        </Badge>
+                        {isFeatured && (
+                            <Badge className="absolute left-4 top-4 bg-brand-red text-white">
+                                Featured Pizza
+                            </Badge>
+                        )}
+                    </div>
+
+                    {images.length > 1 && (
+                        <div className="flex gap-3 overflow-x-auto pb-1">
+                            {images.map((image, index) => (
+                                <button
+                                    key={`${image}-${index}`}
+                                    type="button"
+                                    onClick={() => setActiveImage(index)}
+                                    aria-label={`View image ${index + 1}`}
+                                    className={`relative size-20 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
+                                        activeImage === index
+                                            ? "border-brand-red"
+                                            : "border-transparent opacity-70 hover:opacity-100"
+                                    }`}
+                                >
+                                    {image ? (
+                                        <Image
+                                            src={image}
+                                            alt={`${item.itemName} thumbnail ${index + 1}`}
+                                            fill
+                                            unoptimized
+                                            className="object-cover"
+                                        />
+                                    ) : null}
+                                </button>
+                            ))}
+                        </div>
                     )}
                 </div>
 
@@ -57,7 +162,7 @@ export function MenuDetails({ item }: MenuDetailsProps) {
                         </h1>
 
                         <div className="flex items-center gap-2">
-                            <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                            <Star className="size-5 fill-yellow-400 text-yellow-400" />
                             <span className="font-semibold">
                                 {item.averageRating
                                     ? item.averageRating.toFixed(1)
@@ -82,36 +187,77 @@ export function MenuDetails({ item }: MenuDetailsProps) {
                         </div>
 
                         <div className="flex items-center gap-2 text-sm">
-                            <MapPin className="h-4 w-4 text-brand-red" />
+                            <MapPin className="size-4 text-brand-red" />
                             <span>{item.location}</span>
                         </div>
 
                         <div className="flex items-center gap-2 text-sm">
-                            <Store className="h-4 w-4 text-brand-red" />
+                            <Store className="size-4 text-brand-red" />
                             <span>
                                 {item.vendor?.businessName ||
                                     item.vendor?.name ||
                                     "Pizza Vendor"}
+                                {item.vendor?.isPremium && (
+                                    <Badge className="ml-2 bg-brand-orange text-white">
+                                        Premium
+                                    </Badge>
+                                )}
                             </span>
                         </div>
                     </div>
 
                     <div className="flex flex-wrap gap-3">
-                        <Link
-                            href={`/menu/${item._id}/order`}
-                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-red px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-red/90"
-                        >
-                            <ShoppingBag className="h-5 w-5" />
-                            Order Now
-                        </Link>
+                        {canOrder && (
+                            <Button
+                                size="lg"
+                                className="bg-brand-red py-6 text-base font-semibold text-white hover:bg-brand-red/90"
+                                render={
+                                    <Link href={`/menu/${item._id}/order`} />
+                                }
+                            >
+                                <ShoppingBag className="mr-2 size-5" />
+                                Order Now
+                            </Button>
+                        )}
 
-                        <Link
-                            href="/menu"
-                            className="inline-flex items-center justify-center rounded-lg border px-6 py-3 font-semibold transition-colors hover:bg-muted"
+                        {isCustomer && (
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="py-6"
+                                onClick={() => void handleFavoriteToggle()}
+                                disabled={isTogglingFavorite}
+                            >
+                                <Heart
+                                    className={`mr-2 size-5 ${
+                                        isFavorite
+                                            ? "fill-brand-red text-brand-red"
+                                            : ""
+                                    }`}
+                                />
+                                {isFavorite ? "Saved" : "Save to Favorites"}
+                            </Button>
+                        )}
+
+                        <Button
+                            size="lg"
+                            variant="outline"
+                            className="py-6"
+                            render={<Link href="/menu" />}
                         >
                             Back to Menu
-                        </Link>
+                        </Button>
                     </div>
+
+                    {user && !canOrder && (
+                        <p className="text-sm text-muted-foreground">
+                            {user.role === "vendor"
+                                ? "Vendors cannot place customer orders."
+                                : user.role === "admin"
+                                  ? "Admin accounts cannot place customer orders."
+                                  : "You cannot order your own menu item."}
+                        </p>
+                    )}
                 </div>
             </div>
 
@@ -126,7 +272,7 @@ export function MenuDetails({ item }: MenuDetailsProps) {
                 {reviews.length === 0 ? (
                     <Card>
                         <CardContent className="flex flex-col items-center py-10 text-center">
-                            <MessageCircle className="mb-3 h-10 w-10 text-muted-foreground" />
+                            <MessageCircle className="mb-3 size-10 text-muted-foreground" />
                             <h3 className="font-bold">No reviews yet</h3>
                             <p className="mt-1 text-sm text-muted-foreground">
                                 Be the first customer to share your experience.
@@ -144,7 +290,7 @@ export function MenuDetails({ item }: MenuDetailsProps) {
                                         </p>
 
                                         <div className="flex items-center gap-1">
-                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                                            <Star className="size-4 fill-yellow-400 text-yellow-400" />
                                             <span className="text-sm font-semibold">
                                                 {review.rating}/5
                                             </span>

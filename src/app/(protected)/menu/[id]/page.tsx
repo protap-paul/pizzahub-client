@@ -42,7 +42,8 @@ function MenuDetailsContent() {
         if (isAuthLoading) return;
 
         if (!isAuthenticated) {
-            router.replace("/sign-in");
+            // Store the current URL so we can redirect back after sign-in
+            router.replace(`/sign-in?redirectTo=/menu/${params.id}`);
             return;
         }
 

@@ -7,6 +7,7 @@ import { ArrowRight, Pizza, Store } from "lucide-react";
 import { CategorySection } from "@/features/home/components";
 import { FeaturedMenuSection } from "@/features/home/components";
 import { WhyChooseSection } from "@/features/home/components";
+import { HowItWorksSection } from "@/features/home/components";
 import { VendorCtaSection } from "@/features/home/components";
 
 export default function HomePage() {
@@ -78,6 +79,9 @@ export default function HomePage() {
 
             {/* Why Choose PizzaHub */}
             <WhyChooseSection />
+
+            {/* How PizzaHub Works */}
+            <HowItWorksSection />
 
             {/* Become a Vendor */}
             <VendorCtaSection />
