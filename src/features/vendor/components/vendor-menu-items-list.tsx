@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Pizza, MapPin, Plus, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ interface MenuPagination {
 }
 
 export function VendorMenuItemsList() {
+    const router = useRouter();
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [pagination, setPagination] = useState<MenuPagination | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -60,7 +62,7 @@ export function VendorMenuItemsList() {
     }, []);
 
     useEffect(() => {
-        void fetchMenuItems(currentPage);
+        void Promise.resolve().then(() => fetchMenuItems(currentPage));
     }, [currentPage, fetchMenuItems]);
 
     const handleAvailabilityChange = async (item: MenuItem) => {
@@ -133,7 +135,7 @@ export function VendorMenuItemsList() {
 
                     <Button
                         onClick={() =>
-                            window.location.assign("/dashboard/vendor/menu-items/new")
+                            router.push("/dashboard/vendor/menu-items/new")
                         }
                     >
                         <Plus className="mr-2 size-4" />
@@ -153,7 +155,7 @@ export function VendorMenuItemsList() {
                         <Button
                             className="mt-5"
                             onClick={() =>
-                                window.location.assign("/dashboard/vendor/menu-items/new")
+                                router.push("/dashboard/vendor/menu-items/new")
                             }
                         >
                             <Plus className="mr-2 size-4" />

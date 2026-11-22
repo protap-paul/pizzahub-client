@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -216,9 +217,12 @@ export function EditMenuItemForm({ itemId }: EditMenuItemFormProps) {
                         <p className="mb-2 text-sm text-muted-foreground">
                             Current image
                         </p>
-                        <img
+                        <Image
                             src={currentImage}
                             alt="Current pizza"
+                            width={320}
+                            height={160}
+                            unoptimized
                             className="h-40 w-full max-w-xs rounded-xl object-cover"
                         />
                     </div>

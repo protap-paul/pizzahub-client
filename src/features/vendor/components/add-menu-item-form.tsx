@@ -4,7 +4,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ImagePlus, Loader2, Pizza } from "lucide-react";
+import { ImagePlus, Info, Loader2, Pizza } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -111,7 +111,22 @@ export function AddMenuItemForm() {
                 </div>
             </CardHeader>
 
-            <CardContent>
+            <CardContent className="space-y-6">
+                <div className="flex items-start gap-3 rounded-xl border border-brand-orange/30 bg-brand-orange/5 p-4">
+                    <Info className="mt-0.5 size-5 shrink-0 text-brand-orange" />
+                    <div className="text-sm text-muted-foreground">
+                        <p className="font-semibold text-foreground">
+                            Before you publish
+                        </p>
+                        <p className="mt-1">
+                            New items are saved with <strong>Pending</strong>{" "}
+                            status and appear only after admin approval. Free
+                            vendors can activate up to 3 items; upgrade to
+                            Premium for unlimited active items.
+                        </p>
+                    </div>
+                </div>
+
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="itemName">Pizza Name</Label>
