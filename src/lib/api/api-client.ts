@@ -1,5 +1,6 @@
 
 import { getJWTToken } from "@/lib/auth/auth-utils";
+import { authClient } from "@/lib/auth/auth-client";
 import { ENV } from "@/config/env";
 
 interface ApiRequestOptions extends RequestInit {
@@ -68,6 +69,34 @@ export async function apiRequest<T>(
                 typeof result.message === "string"
                 ? result.message
                 : `Request failed with status ${response.status}`;
+
+        // The backend denies blocked users on every authenticated API call.
+        // Sign them out so stale sessions cannot keep retrying protected routes.
+        if (typeof window !== "undefined" && auth) {
+            const redirectTo = `${window.location.pathname}${window.location.search}`;
+
+            const buildSignInUrl = (error?: string) => {
+                const url = new URL("/sign-in", window.location.origin);
+
+                if (error) url.searchParams.set("error", error);
+                url.searchParams.set("redirectTo", redirectTo);
+
+                return url.toString();
+            };
+
+            if (message.toLowerCase().includes("blocked")) {
+                void authClient.signOut().finally(() => {
+                    window.location.assign(buildSignInUrl("blocked"));
+                });
+            } else if (
+                response.status === 401 &&
+                !window.location.pathname.startsWith("/sign-in")
+            ) {
+                void authClient.signOut().finally(() => {
+                    window.location.assign(buildSignInUrl());
+                });
+            }
+        }
 
         throw new Error(message);
     }
