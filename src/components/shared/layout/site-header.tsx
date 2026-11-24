@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
@@ -126,30 +127,32 @@ export function SiteHeader() {
                             </DropdownMenuTrigger>
 
                             <DropdownMenuContent align="end" className="w-56">
-                                <DropdownMenuLabel>
-                                    <span className="block truncate">
-                                        {user.name}
-                                    </span>
-                                    <span className="block truncate text-xs font-normal text-muted-foreground">
-                                        {user.email}
-                                    </span>
-                                </DropdownMenuLabel>
+                                <DropdownMenuGroup>
+                                    <DropdownMenuLabel>
+                                        <span className="block truncate">
+                                            {user.name}
+                                        </span>
+                                        <span className="block truncate text-xs font-normal text-muted-foreground">
+                                            {user.email}
+                                        </span>
+                                    </DropdownMenuLabel>
 
-                                <DropdownMenuSeparator />
+                                    <DropdownMenuSeparator />
 
-                                <DropdownMenuItem
-                                    onSelect={() => router.push(dashboardHref)}
-                                >
-                                    <Pizza />
-                                    Dashboard
-                                </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => router.push(dashboardHref)}
+                                    >
+                                        <Pizza />
+                                        Dashboard
+                                    </DropdownMenuItem>
 
-                                <DropdownMenuItem
-                                    onSelect={() => router.push("/profile")}
-                                >
-                                    <UserRound />
-                                    Profile Settings
-                                </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => router.push("/profile")}
+                                    >
+                                        <UserRound />
+                                        Profile Settings
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
 
                                 <DropdownMenuSeparator />
 
