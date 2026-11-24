@@ -19,10 +19,10 @@ export interface UpdateProfileResponse {
 }
 
 // Get the logged-in user's profile
-export async function getMyProfile(): Promise<ProfileResponse> {
+export async function getMyProfile(cacheTtl?: number): Promise<ProfileResponse> {
     return apiRequest<ProfileResponse>(
         `${API_ENDPOINTS.USERS}/me`,
-        { auth: true }
+        { auth: true, cacheTtl }
     );
 }
 

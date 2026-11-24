@@ -1,5 +1,7 @@
 
 import { authClient } from "@/lib/auth/auth-client";
+import { clearApiCache } from "@/lib/api/api-client";
+import { clearJWTTokenCache } from "@/lib/auth/auth-utils";
 import type { SignupRole } from "@/types/auth-types";
 
 export interface SignUpInput {
@@ -16,8 +18,15 @@ export interface SignInInput {
     password: string;
 }
 
+function clearSessionCaches() {
+    clearJWTTokenCache();
+    clearApiCache();
+}
+
 // Register a new customer or vendor
 export async function signUpWithEmail(data: SignUpInput) {
+    clearSessionCaches();
+
     return authClient.signUp.email({
         name: data.name,
         email: data.email,
@@ -32,6 +41,8 @@ export async function signUpWithEmail(data: SignUpInput) {
 
 // Sign in with email and password
 export async function signInWithEmail(data: SignInInput) {
+    clearSessionCaches();
+
     return authClient.signIn.email({
         email: data.email,
         password: data.password,
@@ -40,6 +51,8 @@ export async function signInWithEmail(data: SignInInput) {
 
 // Sign in with Google
 export async function signInWithGoogle(callbackURL = "/") {
+    clearSessionCaches();
+
     return authClient.signIn.social({
         provider: "google",
         callbackURL,
@@ -48,5 +61,7 @@ export async function signInWithGoogle(callbackURL = "/") {
 
 // Sign out the current user
 export async function signOut() {
+    clearSessionCaches();
+
     return authClient.signOut();
 }

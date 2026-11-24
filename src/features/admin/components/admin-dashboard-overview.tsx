@@ -33,7 +33,7 @@ export function AdminDashboardOverview() {
             if (refresh) setIsRefreshing(true);
             else setIsLoading(true);
 
-            const response = await getAdminDashboardStats();
+            const response = await getAdminDashboardStats(refresh ? 0 : undefined);
             setStats(response.stats);
         } catch (error) {
             toast.error(

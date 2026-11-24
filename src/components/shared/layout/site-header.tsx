@@ -140,14 +140,14 @@ export function SiteHeader() {
                                     <DropdownMenuSeparator />
 
                                     <DropdownMenuItem
-                                        onSelect={() => router.push(dashboardHref)}
+                                        onClick={() => router.push(dashboardHref)}
                                     >
                                         <Pizza />
                                         Dashboard
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem
-                                        onSelect={() => router.push("/profile")}
+                                        onClick={() => router.push("/profile")}
                                     >
                                         <UserRound />
                                         Profile Settings
@@ -158,7 +158,7 @@ export function SiteHeader() {
 
                                 <DropdownMenuItem
                                     variant="destructive"
-                                    onSelect={() => void handleSignOut()}
+                                    onClick={() => void handleSignOut()}
                                 >
                                     <LogOut />
                                     Logout

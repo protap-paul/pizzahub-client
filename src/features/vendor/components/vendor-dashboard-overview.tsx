@@ -40,8 +40,8 @@ export function VendorDashboardOverview() {
             else setIsLoading(true);
 
             const [statsResponse, profileResponse] = await Promise.all([
-                getVendorDashboardStats(),
-                getMyProfile(),
+                getVendorDashboardStats(refresh ? 0 : undefined),
+                getMyProfile(refresh ? 0 : undefined),
             ]);
 
             setStats(statsResponse.stats);
